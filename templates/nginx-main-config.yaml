@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx.fullname" . }}-main-config
+  labels:
+    {{- include "nginx.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    {{- with .Values.nginx.main -}}
+    {{- include "nginx.main" (dict "main" .) | trim | nindent 4 }}
+    {{- end }}
+    {{- with .Values.nginx.quic -}}
+    {{- include "nginx.main" (dict "quic" .) | trim | nindent 4 }}
+    {{- end }}
+    {{- with .Values.nginx.include -}}
+    {{- include "nginx.main" (dict "include" .) | trim | nindent 4 }}
+    {{- end }}
+    {{- with .Values.nginx.events }}
+    events {
+      {{- include "nginx.events" . | trim | nindent 6 }}
+    }
+    {{- end }}
+    {{- with .Values.nginx.http }}
+    http {
+      {{- if hasKey . "include" }}
+        {{- if kindIs "slice" .include }}
+          {{- range .include }}
+      include {{ . }};
+          {{- end }}
+        {{- else }}
+      include {{ .include }};
+        {{- end }}
+      {{- end }}
+    }
+    {{- end }}
+    {{- with .Values.nginx.stream }}
+    stream {
+      {{- if hasKey . "include" }}
+        {{- if kindIs "slice" .include }}
+          {{- range .include }}
+      include {{ . }};
+          {{- end }}
+        {{- else }}
+      include {{ .include }};
+        {{- end }}
+      {{- end }}
+    }
+    {{- end }}
