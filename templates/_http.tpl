@@ -10,13 +10,10 @@ generic template for every nginx http config file
       {{- include "nginx.ngx_http_core_module" (dict "directives" . "scope" "http") -}}
     {{- end -}}
     {{- with .http2 -}}
-      {{- include "nginx.http_v2" (dict "directives" . "scope" "http") -}}
+      {{- include "nginx.ngx_http_v2_module" (dict "directives" . "scope" "http") -}}
     {{- end -}}
     {{- with .http3 -}}
-      {{- include "nginx.http_v3" (dict "directives" . "scope" "http") -}}
-    {{- end -}}
-    {{- with .quic -}}
-      {{- include "nginx.quic" (dict "directives" . "scope" "http") -}}
+      {{- include "nginx.ngx_http_v3_module" (dict "directives" . "scope" "http") -}}
     {{- end -}}
     {{- with .ssl -}}
       {{- include "nginx.ssl" (dict "directives" . "scope" "http") -}}
@@ -73,13 +70,10 @@ generic template for every nginx http config file
             {{- include "nginx.ngx_http_core_module" (dict "directives" . "scope" "server") | indent 2 -}}
           {{- end -}}
           {{- with .http2 -}}
-            {{- include "nginx.http_v2" (dict "directives" . "scope" "server") | indent 2 -}}
+            {{- include "nginx.ngx_http_v2_module" (dict "directives" . "scope" "server") | indent 2 -}}
           {{- end -}}
           {{- with .http3 -}}
-            {{- include "nginx.http_v3" (dict "directives" . "scope" "server") | indent 2 -}}
-          {{- end -}}
-          {{- with .quic -}}
-            {{- include "nginx.quic" (dict "directives" . "scope" "server") | indent 2 -}}
+            {{- include "nginx.ngx_http_v3_module" (dict "directives" . "scope" "server") | indent 2 -}}
           {{- end -}}
           {{- with .ssl -}}
             {{- include "nginx.ssl" (dict "directives" . "scope" "server") | indent 2 -}}
@@ -133,7 +127,7 @@ generic template for every nginx http config file
                   {{- include "nginx.ngx_http_core_module" (dict "directives" . "scope" "location") | indent 4 -}}
                 {{- end -}}
                 {{- with .http2 -}}
-                  {{- include "nginx.http_v2" (dict "directives" . "scope" "location") | indent 4 -}}
+                  {{- include "nginx.ngx_http_v2_module" (dict "directives" . "scope" "location") | indent 4 -}}
                 {{- end -}}
                 {{- with .proxy -}}
                   {{- include "nginx.http_proxy" (dict "directives" . "scope" "server") | indent 4 -}}
