@@ -1,0 +1,20 @@
+{{- /* These files will be mounted in the /etc/nginx/conf.d directory */ -}}
+{{- $root := . -}}
+{{- with .Values.nginx -}}
+{{- with .http -}}
+{{- with .config_files -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nginx.fullname" $root }}-http-config-files
+  labels:
+    {{- include "nginx.labels" $root | nindent 4 }}
+data:
+  {{- range $filename, $content := . }}
+  {{ $filename }}: |-
+    {{- include "nginx.http" $content | indent 4 }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

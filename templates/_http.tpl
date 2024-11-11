@@ -1,8 +1,18 @@
 {{- /*
 generic template for every nginx http config file
 */}}
-{{- define "nginx.http_generic_config" -}}
-  {{- with .config -}}
+{{- define "nginx.http" -}}
+  {{- if kindIs "map" .config -}}
+    {{- include "nginx.http_config" .config | indent 0 -}}
+  {{- else if kindIs "slice" .config -}}
+    {{- range .config -}}
+      {{- include "nginx.http_config" . | indent 0 -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "nginx.http_config" -}}
+  {{- with . -}}
     {{- with .upstreams -}}
       {{- include "nginx.http-upstream" . -}}
     {{- end -}}
