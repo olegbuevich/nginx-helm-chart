@@ -1,3 +1,5 @@
+{{- $has_http_config_file := and (hasKey .Values "nginx") (hasKey .Values.nginx "http") (hasKey .Values.nginx.http "config_files") (gt (len .Values.nginx.http.config_files) 0) -}}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -54,8 +56,10 @@ spec:
             - name: nginx-config
               mountPath: /etc/nginx/nginx.conf
               subPath: nginx.conf
+            {{- if $has_http_config_file }}
             - name: nginx-http-config-files
               mountPath: /etc/nginx/conf.d
+            {{- end }}
           {{- with .Values.volumeMounts }}
           {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -63,9 +67,11 @@ spec:
         - name: nginx-config
           configMap:
             name: {{ include "nginx.fullname" . }}-config
+        {{- if $has_http_config_file }}
         - name: nginx-http-config-files
           configMap:
             name: {{ include "nginx.fullname" . }}-http-config-files
+        {{- end }}
         {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
         {{- end }}
