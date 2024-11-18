@@ -1,0 +1,50 @@
+---
+
+nginx:
+  core:
+    user: nginx
+    worker_processes: auto
+    error_log:
+      -
+        file: /var/log/nginx/error.log
+        level: notice
+    pid: /var/run/nginx.pid
+    events:
+      worker_connections: 1024
+  http:
+    include:
+      before:
+        - /etc/nginx/mime.types
+      after:
+        - /etc/nginx/conf.d/*.conf
+    config:
+      core:
+        default_type: application/octet-stream
+        keepalive_timeout: 65s
+        sendfile: on
+        server_tokens: false
+      log:
+        format:
+          - name: main
+            format: >-
+              $remote_addr - $remote_user [$time_local] "$request"
+              $status $body_bytes_sent "$http_referer"
+              "$http_user_agent" "$http_x_forwarded_for"
+        access:
+          - path: /var/log/nginx/access.log
+            format: main
+      servers:
+        - core:
+            server_name: _
+            listen:
+              - port: 80
+                default_server: true
+          locations:
+            - location: /
+              core:
+                root: /usr/share/nginx/html
+                index: index.html
+            - location: /healthz
+              rewrite:
+                return:
+                  code: 204
