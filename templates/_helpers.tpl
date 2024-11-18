@@ -60,3 +60,92 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "nginx.imageRegistry" -}}
+{{- if eq . "" -}}
+  {{- print . -}}
+{{- else -}}
+  {{- printf "%s/" (. | trimSuffix "/") -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "nginx.containerPorts" -}}
+  {{- range ((include "nginx.allContainerPorts" .) | fromYamlArray | uniq) -}}
+    {{- print (include "nginx.containerPortTemplate" .) | nindent 0 -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "nginx.servicePorts" -}}
+  {{- range ((include "nginx.allContainerPorts" .) | fromYamlArray | uniq) -}}
+    {{- print (include "nginx.servicePortTemplate" .) | nindent 0 -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /*
+nginx -> http -> config -> servers[]
+nginx -> http -> config[] -> servers[]
+nginx -> http -> config_files{} -> servers[]
+*/ -}}
+{{- define "nginx.allContainerPorts" -}}
+  {{- with .Values.nginx -}}
+    {{- with .http -}}
+      {{- with .config -}}
+        {{- if kindIs "map" . -}}
+          {{- with .servers -}}
+            {{- include "nginx.containerPortFromServers" . | indent 2 -}}
+          {{- end -}}
+        {{- else if kindIs "slice" . -}}
+          {{- range . -}}
+            {{- with .servers -}}
+              {{- include "nginx.containerPortFromServers" . | indent 2 -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+      {{- with .config_files -}}
+        {{- range $filename, $content := . }}
+          {{- with .config -}}
+            {{- if kindIs "map" . -}}
+              {{- with .servers -}}
+                {{- include "nginx.containerPortFromServers" . | indent 2 -}}
+              {{- end -}}
+            {{- else if kindIs "slice" . -}}
+              {{- range . -}}
+                {{- with .servers -}}
+                  {{- include "nginx.containerPortFromServers" . | indent 2 -}}
+                {{- end -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- define "nginx.containerPortFromServers" -}}
+  {{- range . -}}
+    {{- if and (hasKey . "core") (hasKey .core "listen") -}}
+      {{- range .core.listen -}}
+        {{- if hasKey . "port" -}}{{- print "- " .port | nindent 0 -}}{{- end -}}
+      {{- end -}}
+    {{- else -}}
+      {{- print "- 80" | nindent 0 -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /*  */ -}}
+{{- define "nginx.containerPortTemplate" -}}
+- name: http{{ . }}
+  containerPort: {{ . }}
+  protocol: TCP
+{{- end -}}
+
+{{- /*  */ -}}
+{{- define "nginx.servicePortTemplate" -}}
+- name: http{{ . }}
+  targetPort: http{{ . }}
+  port: {{ . }}
+  protocol: TCP
+{{- end -}}

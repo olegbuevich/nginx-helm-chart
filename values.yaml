@@ -3,6 +3,7 @@
 replicaCount: 1
 
 image:
+  registry: ""
   repository: nginx
   pullPolicy: IfNotPresent
   tag: stable-alpine
@@ -38,7 +39,6 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
 
 ingress:
   enabled: false
@@ -100,6 +100,23 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+podDisruptionBudget: {}
+  # enabled: false
+  # minAvailable: 70%
+  # # maxUnavailable: 30%
+
+networkPolicy: {}
+  # enabled: false
+  # ingress:
+  #   - ports:
+  #       - port: 80
+  # egress:
+  #   - ports:
+  #       - port: 53
+  #         protocol: UDP
+  #       - port: 53
+  #         protocol: TCP
 
 # see example files
 nginx: {}

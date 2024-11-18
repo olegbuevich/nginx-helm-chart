@@ -1,0 +1,21 @@
+{{- $root := . -}}
+{{- with .Values.podDisruptionBudget -}}
+{{- if and (hasKey . "enabled") .enabled -}}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "nginx.fullname" $root }}
+  labels: {{- include "nginx.labels" $root | nindent 4 }}
+spec:
+  {{- if hasKey . "minAvailable" }}
+  minAvailable: {{ .minAvailable }}
+  {{- else if hasKey . "maxUnavailable" }}
+  maxUnavailable: {{ .maxUnavailable }}
+  {{- else }}
+  minAvailable: 50%
+  {{- end }}
+  selector:
+    matchLabels: {{- include "nginx.selectorLabels" $root | nindent 6 }}
+{{- end }}
+{{- end }}

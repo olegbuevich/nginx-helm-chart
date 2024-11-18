@@ -1,0 +1,27 @@
+{{- $root := . -}}
+{{- with .Values.networkPolicy -}}
+{{- if and (hasKey . "enabled") .enabled -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "nginx.fullname" $root }}
+  labels: {{- include "nginx.labels" $root | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "nginx.selectorLabels" $root | nindent 6 }}
+  policyTypes:
+{{- if hasKey . "ingress" }}
+    - Ingress
+{{- end }}
+{{- if hasKey . "egress" }}
+    - Egress
+{{- end }}
+{{- with .ingress }}
+  ingress: {{- tpl (. | toYaml) $root | nindent 4 -}}
+{{- end -}}
+{{- with .egress }}
+  egress: {{- tpl (. | toYaml) $root | nindent 4 -}}
+{{- end }}
+{{- end }}
+{{- end }}

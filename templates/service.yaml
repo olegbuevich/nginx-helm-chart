@@ -1,0 +1,16 @@
+{{- $root := . -}}
+{{- with .Values.service -}}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "nginx.fullname" $root }}
+  labels: {{- include "nginx.labels" $root | nindent 4 }}
+spec:
+  type: {{ .type }}
+{{- if hasKey . "clusterIP" }}
+  clusterIP: {{ .clusterIP }}
+{{- end }}
+  ports: {{ include "nginx.servicePorts" $root | indent 4 }}
+  selector: {{- include "nginx.selectorLabels" $root | nindent 4 }}
+{{- end }}
